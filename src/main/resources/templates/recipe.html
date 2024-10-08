@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe - Honey Milk Delight</title>
+    <style>
+        /* Your styles here */
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Recipe: [[${recipe.title}]]</h1>
+    <h2>Cooking Time: [[${recipe.time}]] minutes</h2>
+    <h3>Ingredients:</h3>
+    <ul>
+        <li th:each="ingredient : ${recipe.groceries}" class="ingredient">[[${ingredient}]]</li>
+    </ul>
+    <h3>Instructions:</h3>
+    <ol>
+        <li th:each="step : ${recipe.instructions}" class="instruction">[[${step}]]</li>
+    </ol>
+</div>
+</body>
+</html>
