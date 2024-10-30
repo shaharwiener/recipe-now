@@ -1,0 +1,21 @@
+# # Use a base image with Java 22
+# FROM openjdk:22-jdk AS build
+#
+# # Set the working directory
+# WORKDIR /app
+#
+# # Copy the pom.xml and any other necessary files to build the application
+# COPY pom.xml .
+# COPY src ./src
+#
+# # Build the application
+# RUN mvn package -DskipTests
+#
+# # Use a lighter image for running the app
+# FROM eclipse-temurin:22-jre-alpine
+#
+# # Copy the jar file from the builder image
+# COPY --from=builder /app/target/recipe-now-0.0.1-SNAPSHOT.jar recipe-now-0.0.1-SNAPSHOT.jar
+#
+# # Specify the command to run the app
+# ENTRYPOINT ["java", "-jar", "/app.jar"]

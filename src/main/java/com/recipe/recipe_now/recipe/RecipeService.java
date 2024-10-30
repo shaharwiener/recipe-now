@@ -1,16 +1,13 @@
-package com.recipe.recipe_now.service;
+package com.recipe.recipe_now.recipe;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.recipe.recipe_now.model.RecipeRequest;
-import com.recipe.recipe_now.model.RecipeResponse;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -46,10 +43,13 @@ public class RecipeService {
 
     private String createPrompt(RecipeRequest request) {
         return "Create a recipe based on the following details: " +
-                "Groceries: " + String.join(", ", request.groceries())  +
-                " and cooking time is up to " + request.time() + " minutes. " +
+                "Groceries: " + request.groceries() +
+                " and cooking time is up to " + request.time() + " minutes," +
+                " and number of diners is ." + request.diners() +
+                " The groceries input will be in Hebrew and the output should also be in Hebrew. " +
+                " The groceries output should include the amount needed for the given diners " +
                 "Please provide a JSON response with the following fields: " +
-                "{\"title\": \"\", \"groceries\": [], \"time\": \"\", \"instructions\": []}.";
+                "{\"title\": \"\", \"diners\": \"\", \"groceries\": [], \"time\": \"\", \"instructions\": []}.";
     }
 
     private RecipeResponse parseJsonResponse(String response) throws IOException {
@@ -65,6 +65,7 @@ public class RecipeService {
             groceries.add(grocery.asText());
         }
 
+        int diners = jsonResponse.path("diners").asInt();
         long time = jsonResponse.path("time").asLong();
 
         // Parse the instructions field as a List<String>
@@ -73,7 +74,7 @@ public class RecipeService {
             instructions.add(instruction.asText());
         }
 
-        return new RecipeResponse(title, groceries, time, instructions);
+        return new RecipeResponse(title, diners, groceries, time, instructions);
     }
 }
 

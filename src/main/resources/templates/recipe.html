@@ -11,8 +11,9 @@
 <body>
 <div class="container">
     <h1>Recipe: [[${recipe.title}]]</h1>
+    <h2>Diners: [[${recipe.diners}]]</h2>
     <h2>Cooking Time: [[${recipe.time}]] minutes</h2>
-    <h3>Ingredients:</h3>
+    <h2>Ingredients:</h2>
     <ul>
         <li th:each="ingredient : ${recipe.groceries}" class="ingredient">[[${ingredient}]]</li>
     </ul>

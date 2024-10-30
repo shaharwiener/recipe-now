@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan({"com.recipe.recipe_now.controller","com.recipe.recipe_now.service"})
+@ComponentScan({"com.recipe.recipe_now.recipe","com.recipe.recipe_now.user"})
 @SpringBootApplication
 public class RecipeNowApplication {
 

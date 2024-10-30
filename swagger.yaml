@@ -1,0 +1,56 @@
+openapi: 3.0.0
+info:
+  title: Recipe API
+  description: API for managing recipes
+  version: 1.0.0
+servers:
+  - url: https://{api-id}.execute-api.{region}.amazonaws.com/{stage}
+    variables:
+      api-id:
+        default: your_api_id
+      region:
+        default: your_region
+      stage:
+        default: dev
+paths:
+  /recipe:
+    get:
+      summary: Get a recipe
+      operationId: getRecipe
+      parameters:
+        - name: groceries
+          in: query
+          required: true
+          description: A list of groceries for the recipe
+          schema:
+            type: array
+            items:
+              type: string
+        - name: time
+          in: query
+          required: true
+          description: Maximum cooking time in minutes
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response with recipe details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  groceries:
+                    type: array
+                    items:
+                      type: string
+                  time:
+                    type: integer
+                  instructions:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: Recipe not found
