@@ -3,11 +3,8 @@ package com.recipe.recipe_now.recipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
+import com.recipe.recipe_now.ai.AiService;
 import org.springframework.ai.converter.BeanOutputConverter;
-import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,42 +14,45 @@ import java.util.List;
 @Service
 public class RecipeService {
 
-    private final ChatClient chatClient;
+    private final AiService aiService;
 
-    public RecipeService(ChatClient.Builder chatClientBuilder) {
-        this.chatClient = chatClientBuilder.build();
+    public RecipeService(AiService aiService) {
+        this.aiService = aiService;
+    }
+
+    public RecipeOptionsResponse getRecipeOptions(RecipeRequest recipeRequest) throws IOException {
+        var outputConverter = new BeanOutputConverter<>(RecipeOptionsResponse.class);
+        var jsonSchema = outputConverter.getJsonSchema();
+        String getRecipeOptionsPrompt = RecipePrompts.createGetRecipeOptionsPrompt(recipeRequest);
+        String response = this.aiService.executePrompt(getRecipeOptionsPrompt, jsonSchema);
+
+        return createRecipeOptionsResponse(response);
+    }
+
+    private RecipeOptionsResponse createRecipeOptionsResponse(String response) throws IOException {
+        // Use Jackson ObjectMapper to parse the response as JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonResponse = objectMapper.readTree(response);
+
+        String option1 = jsonResponse.path("option1").asText();
+        String option2 = jsonResponse.path("option2").asText();
+        String option3 = jsonResponse.path("option3").asText();
+        String option4 = jsonResponse.path("option4").asText();
+
+        return new RecipeOptionsResponse(option1,option2,option3,option4);
+
     }
 
     public RecipeResponse getRecipe(RecipeRequest recipeRequest) throws IOException {
         var outputConverter = new BeanOutputConverter<>(RecipeResponse.class);
-        var jsonSchema = outputConverter.getJsonSchema();
-        String userPrompt = createPrompt(recipeRequest);
-        System.out.println("-----------> userPrompt:" + userPrompt);
+        String jsonSchema = outputConverter.getJsonSchema();
+        String getRecipePrompt = RecipePrompts.createGetRecipePrompt(recipeRequest);
+        String response = this.aiService.executePrompt(getRecipePrompt, jsonSchema);
 
-        Prompt prompt = new Prompt(userPrompt,
-                OpenAiChatOptions.builder()
-                        .withResponseFormat(new OpenAiApi.ChatCompletionRequest.ResponseFormat(OpenAiApi.ChatCompletionRequest.ResponseFormat.Type.JSON_SCHEMA, jsonSchema))
-                        .build());
-
-        String response = this.chatClient.prompt(prompt).call().chatResponse().getResult().getOutput().getContent();
-
-        System.out.println("-----------> response:" + response);
-        // Parse the JSON response
-        return parseJsonResponse(response);
+        return createRecipeResponse(response);
     }
 
-    private String createPrompt(RecipeRequest request) {
-        return "Create a recipe based on the following details: " +
-                "Groceries: " + request.groceries() +
-                " and cooking time is up to " + request.time() + " minutes," +
-                " and number of diners is ." + request.diners() +
-                " The groceries input will be in Hebrew and the output should also be in Hebrew. " +
-                " The groceries output should include the amount needed for the given diners " +
-                "Please provide a JSON response with the following fields: " +
-                "{\"title\": \"\", \"diners\": \"\", \"groceries\": [], \"time\": \"\", \"instructions\": []}.";
-    }
-
-    private RecipeResponse parseJsonResponse(String response) throws IOException {
+    private RecipeResponse createRecipeResponse(String response) throws IOException {
         // Use Jackson ObjectMapper to parse the response as JSON
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonResponse = objectMapper.readTree(response);
@@ -76,5 +76,6 @@ public class RecipeService {
 
         return new RecipeResponse(title, diners, groceries, time, instructions);
     }
+
 }
 
